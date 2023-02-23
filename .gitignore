@@ -1,3 +1,4 @@
 /UCF-Train-Val-Test/*
 /model/*
 */__pycache__/*
+try_train.ipynb
