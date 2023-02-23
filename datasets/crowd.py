@@ -33,16 +33,19 @@ class Crowd(data.Dataset):
                  method='train'):
 
         self.root_path = root_path
+        # 获取 train/val 数据集下的文件列表，并进行排序
         self.im_list = sorted(glob(os.path.join(self.root_path, '*.jpg')))
         if method not in ['train', 'val']:
             raise Exception("not implement")
         self.method = method
 
+        # 裁剪大小 crop_szie 和下采样率 downsample_ratio
         self.c_size = crop_size
         self.d_ratio = downsample_ratio
         assert self.c_size % self.d_ratio == 0
         self.dc_size = self.c_size // self.d_ratio
 
+        # 灰度图像和RGB图像使用不同的Transform参数
         if is_gray:
             self.trans = transforms.Compose([
                 transforms.ToTensor(),
@@ -62,6 +65,7 @@ class Crowd(data.Dataset):
         gd_path = img_path.replace('jpg', 'npy')
         try:
             img = Image.open(img_path).convert('RGB')
+            img.show()
         except:
             print(os.path.basename(img_path).split('.')[0])
         if self.method == 'train':
@@ -73,11 +77,16 @@ class Crowd(data.Dataset):
             name = os.path.basename(img_path).split('.')[0]
             return img, len(keypoints), name
 
+    '''
+    @p img 图像nd_array
+    @p keypoints 关键点（应该是标注的人像点吧）
+    '''
     def train_transform(self, img, keypoints):
         """random crop image patch and find people in it"""
         wd, ht = img.size
         # assert len(keypoints) > 0
         if random.random() > 0.88:
+            # 12%的图像先转灰度图再转RGB图
             img = img.convert('L').convert('RGB')
         re_size = random.random() * 0.5 + 0.75
         wdd = (int)(wd*re_size)
@@ -89,8 +98,11 @@ class Crowd(data.Dataset):
             keypoints = keypoints*re_size
         st_size = min(wd, ht)
         assert st_size >= self.c_size
+
+        # 随机裁剪
         i, j, h, w = random_crop(ht, wd, self.c_size, self.c_size)
         img = F.crop(img, i, j, h, w)
+        img.show()
         if len(keypoints) > 0:
             nearest_dis = np.clip(keypoints[:, 2], 4.0, 128.0)
 
@@ -105,6 +117,8 @@ class Crowd(data.Dataset):
             target = ratio[mask]
             keypoints = keypoints[mask]
             keypoints = keypoints[:, :2] - [j, i]  # change coodinate
+        
+
         if len(keypoints) > 0:
             if random.random() > 0.5:
                 img = F.hflip(img)
@@ -113,5 +127,11 @@ class Crowd(data.Dataset):
             target = np.array([])
             if random.random() > 0.5:
                 img = F.hflip(img)
+        ''' 
+        @r 经过Transform后的图像数组
+        @r 图中人的坐标点
+        @r TODO target含义没太懂
+        @r st_size 图像宽、高中最大的值
+        '''
         return self.trans(img), torch.from_numpy(keypoints.copy()).float(), \
                torch.from_numpy(target.copy()).float(), st_size

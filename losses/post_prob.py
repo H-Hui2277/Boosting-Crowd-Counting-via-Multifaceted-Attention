@@ -12,10 +12,12 @@ class Post_Prob(Module):
         # coordinate is same to image space, set to constant since crop size is same
         self.cood = torch.arange(0, c_size, step=stride,
                                  dtype=torch.float32, device=device) + stride / 2
+        # [c_size // stride] -> [1, c_size // stride]
         self.cood.unsqueeze_(0)
         self.softmax = torch.nn.Softmax(dim=0)
         self.use_bg = use_background
 
+    
     def forward(self, points, st_sizes):
         num_points_per_image = [len(points_per_image) for points_per_image in points]
         all_points = torch.cat(points, dim=0)
@@ -35,6 +37,8 @@ class Post_Prob(Module):
             for dis, st_size in zip(dis_list, st_sizes):
                 if len(dis) > 0:
                     if self.use_bg:
+                        # clamp函数将input张量每个元素的值压缩到区间[min, max]
+                        # clamp(input, min, max, out=None) -> Tensor
                         min_dis = torch.clamp(torch.min(dis, dim=0, keepdim=True)[0], min=0.0)
                         d = st_size * self.bg_ratio
                         bg_dis = (d - torch.sqrt(min_dis))**2
