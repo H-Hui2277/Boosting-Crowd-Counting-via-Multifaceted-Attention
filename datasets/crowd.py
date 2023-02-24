@@ -65,7 +65,7 @@ class Crowd(data.Dataset):
         gd_path = img_path.replace('jpg', 'npy')
         try:
             img = Image.open(img_path).convert('RGB')
-            img.show()
+            # img.show()
         except:
             print(os.path.basename(img_path).split('.')[0])
         if self.method == 'train':
@@ -102,7 +102,7 @@ class Crowd(data.Dataset):
         # 随机裁剪
         i, j, h, w = random_crop(ht, wd, self.c_size, self.c_size)
         img = F.crop(img, i, j, h, w)
-        img.show()
+        # img.show()
         if len(keypoints) > 0:
             nearest_dis = np.clip(keypoints[:, 2], 4.0, 128.0)
 
