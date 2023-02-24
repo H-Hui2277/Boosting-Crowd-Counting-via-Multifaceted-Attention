@@ -43,8 +43,9 @@ class VGG_Trans(nn.Module):
         x = x.flatten(2).permute(2, 0, 1)
         x, features = self.encoder(x, (h,w))   # transformer
         x = x.permute(1, 2, 0).view(bs, c, h, w)
-        #
-        x = F.upsample_bilinear(x, size=(rh, rw))
+        # use F.interpolate() instead.
+        # x = F.upsample_bilinear(x, size=(rh, rw))
+        x = F.interpolate(x, size=(rh, rw), mode='bilinear')
         x = self.reg_layer_0(x)   # regression head
         return torch.relu(x), features
 

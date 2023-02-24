@@ -89,6 +89,7 @@ class RegTrainer(Trainer):
     def train(self):
         """training process"""
         args = self.args
+        # TODO 改成trange
         for epoch in range(self.start_epoch, args.max_epoch):
             logging.info('-'*5 + 'Epoch {}/{}'.format(epoch, args.max_epoch - 1) + '-'*5)
             self.epoch = epoch
