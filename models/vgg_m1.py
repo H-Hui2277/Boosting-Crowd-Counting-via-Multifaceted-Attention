@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import torch
 from torch.nn import functional as F
-from .transformer_cosine import TransformerEncoder, TransformerEncoderLayer
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 
 __all__ = ['vgg19_trans']
@@ -21,7 +21,7 @@ class VGG_Trans(nn.Module):
         activation = "relu"
         normalize_before = False
         encoder_layer = TransformerEncoderLayer(d_model, nhead, dim_feedforward,
-                                                dropout, activation, normalize_before)
+                                                dropout, activation, batch_first=True)
         if_norm = nn.LayerNorm(d_model) if normalize_before else None
 
         self.encoder = TransformerEncoder(encoder_layer, num_layers, if_norm)
@@ -40,13 +40,13 @@ class VGG_Trans(nn.Module):
         x = self.features(x)   # vgg network
 
         bs, c, h, w = x.shape
-        x = x.flatten(2).permute(2, 0, 1) # 每一个像素点作为样本
+        x = x.flatten(2).permute(0, 2, 1) # 每一个像素点作为样本
         # Transformer input.size = (length, seq, len) -> (hw, n, c)
-        x, features = self.encoder(x, (h,w))   # transformer
-        x = x.permute(1, 2, 0).view(bs, c, h, w)
+        x, features = self.encoder(x)   # transformer
+        x = x.permute(0, 2, 1).view(bs, c, h, w)
         # use F.interpolate() instead.
         # x = F.upsample_bilinear(x, size=(rh, rw))
-        x = F.interpolate(x, size=(rh, rw), mode='bilinear')
+        x = F.interpolate(x, size=(rh, rw), mode='bilinear', align_corners=True)
         x = self.reg_layer_0(x)   # regression head
         return torch.relu(x), features
 
@@ -71,7 +71,7 @@ cfg = {
     'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M']
 }
 
-def vgg19_trans():
+def vgg19_m1():
     """VGG 19-layer model (configuration "E")
         model pre-trained on ImageNet
     """

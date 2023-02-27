@@ -10,7 +10,7 @@ from torch.utils.data.dataloader import default_collate
 import logging
 import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from models import vgg_c
+from models import vgg_c, vgg_m1
 from datasets.crowd import Crowd
 from losses.bay_loss import Bay_Loss
 from losses.post_prob import Post_Prob
@@ -56,8 +56,14 @@ class RegTrainer(Trainer):
                                           num_workers=args.num_workers*self.device_count,
                                           pin_memory=(True if x == 'train' else False))
                             for x in ['train', 'val']}
-        # self.model = getattr(models, args.model_name)()
-        self.model = vgg_c.vgg19_trans()
+        # select model
+        if self.args.model == 'vgg_c':
+            self.model = vgg_c.vgg19_trans()
+        elif self.args.model == 'vgg_m1':
+            self.model = vgg_m1.vgg19_m1()
+        else : # default
+            self.model = vgg_c.vgg19_trans()
+
         self.model.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         # Recover
