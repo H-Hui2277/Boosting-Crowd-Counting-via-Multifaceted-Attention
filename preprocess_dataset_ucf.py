@@ -6,11 +6,16 @@ from glob import glob
 import cv2
 import argparse
 
-
+'''@d 对图像进行放缩，使图像大小在min_size-max_size范围内
+@p im_h 图高
+@p im_w 图宽
+@p min_size 
+@p max_size 
+'''
 def cal_new_size(im_h, im_w, min_size, max_size):
     if im_h < im_w:
         if im_h < min_size:
-            ratio = 1.0 * min_size / im_h
+            ratio = 1.0 * min_size / im_h # ratio > 1
             im_h = min_size
             im_w = round(im_w*ratio)
         elif im_h > max_size:
@@ -72,6 +77,7 @@ if __name__ == '__main__':
     for phase in ['Train', 'Test']:
         sub_dir = os.path.join(args.origin_dir, phase)
         if phase == 'Train':
+            # train和val数据划分
             sub_phase_list = ['train', 'val']
             for sub_phase in sub_phase_list:
                 sub_save_dir = os.path.join(save_dir, sub_phase)
