@@ -60,6 +60,10 @@ class RegTrainer(Trainer):
         self.model = vgg_c.vgg19_trans()
         self.model.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+        # Recover
+        if self.args.checkpoint != None:
+            print("Recover from checkpoint {}".format(self.args.checkpoint))
+            self.model.load_state_dict(torch.load(self.args.checkpoint))
 
         self.start_epoch = 0
         if args.resume:
