@@ -40,7 +40,8 @@ class VGG_Trans(nn.Module):
         x = self.features(x)   # vgg network
 
         bs, c, h, w = x.shape
-        x = x.flatten(2).permute(2, 0, 1)
+        x = x.flatten(2).permute(2, 0, 1) # 每一个像素点作为样本
+        # Transformer input.size = (n_batch, length, embedding_length)
         x, features = self.encoder(x, (h,w))   # transformer
         x = x.permute(1, 2, 0).view(bs, c, h, w)
         # use F.interpolate() instead.
