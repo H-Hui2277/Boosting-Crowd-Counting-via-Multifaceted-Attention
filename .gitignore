@@ -1,5 +1,5 @@
 /UCF-Train-Val-Test/*
 /model/*
-*/__pycache__/*
+__pycache__
 /other/*
 *.ipynb
