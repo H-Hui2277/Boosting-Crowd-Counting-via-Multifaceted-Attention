@@ -46,7 +46,7 @@ class VGG_Trans(nn.Module):
         x = x.permute(1, 2, 0).view(bs, c, h, w)
         # use F.interpolate() instead.
         # x = F.upsample_bilinear(x, size=(rh, rw))
-        x = F.interpolate(x, size=(rh, rw), mode='bilinear')
+        x = F.interpolate(x, size=(rh, rw), mode='bilinear', align_corners=True)
         x = self.reg_layer_0(x)   # regression head
         return torch.relu(x), features
 
