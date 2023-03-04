@@ -54,7 +54,7 @@ class Counter(object):
                     img_blocks.append(img[:, :, h_start:h_end, w_start:w_end])
             with torch.no_grad():
                 crowd_count = 0.0
-                for idx, img_block in enumerate(img_blocks):
+                for _, img_block in enumerate(img_blocks):
                     output = self.model(img_block)[0]
                     crowd_count += torch.sum(output).item()
         else:
